@@ -1,11 +1,12 @@
 # This is a sample Python script.
+import os
 
 # Press Ctrl+F5 to execute it or replace it with your code.
 # Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
 
 from dependency_injector.wiring import Provide, inject
 
-from Infrastructure.Container import Container
+from Infrastructure.Configuration.Container import Container
 from Modules.User.UserFactory.UserFactory import UserFactory
 
 @inject
@@ -20,6 +21,6 @@ if __name__ == '__main__':
     # run UI
 
     # get username from input or from last session
-    main("ConsolationWnrAgain")
+    main(os.getenv('TEST_USERNAME'))
 
 # See PyCharm help at https://www.jetbrains.com/help/pycharm/

@@ -1,8 +1,9 @@
 """
-Creates and fetches all data necessary for a single User
+Creates and fetches all data necessary for the current User
 """
 import json
 
+from Infrastructure.Database.Database import Database
 from Modules.Enums.Sport import Sport
 from Modules.League.League import League
 from Modules.League.Team import Team
@@ -13,8 +14,9 @@ from Modules.Util.ComplexNamespace import ComplexNamespace
 
 
 class UserFactory(IUserFactory):
-    def __init__(self, api: SleeperApi):
+    def __init__(self, api: SleeperApi, db: Database):
         self.api = api
+        self.db = db
 
     def get_user(self, username: str) -> User:
         return self._get_user(username)
