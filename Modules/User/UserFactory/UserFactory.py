@@ -2,6 +2,7 @@
 Creates and fetches all data necessary for the current User
 """
 import json
+from typing import Any
 
 from Infrastructure.Database.Database import Database
 from Modules.Enums.Sport import Sport
@@ -23,7 +24,13 @@ class UserFactory(IUserFactory):
 
     # region Private Method(s)
     def _get_user(self, username: str) -> User:
-        # TODO: check if user already exists in DB and pull that
+        # check if user already exists in DB and pull that
+        sql = f"""SELECT * FROM "Users" WHERE username = '{username.lower()}' LIMIT 1"""
+        # TODO: turn into User obj
+        user = self.db.execute(sql)
+
+        # if it exists, return it from DB
+        return user
 
         # if not, get from Sleeper Api
         endpoint = f"user/{username}"
@@ -32,9 +39,12 @@ class UserFactory(IUserFactory):
         user = User(user_obj.username, user_obj.user_id, user_obj.display_name, user_obj.avatar,
                     self._get_leagues(user_obj.user_id))
 
-        # TODO: add user to database or update if username was changed
+        # Add user to database or update if username was changed
+        sql = f"""INSERT INTO "Users" (user_id, username, display_name, avatar_id) VALUES('{user.user_id.lower()}','{user.username.lower()}','{user.display_name.lower()}','{user.avatar_id.lower()}')"""
+        self.db.execute(sql)
 
         return user
+
 
     def _get_leagues(self, user_id: int) -> list[League]:
 

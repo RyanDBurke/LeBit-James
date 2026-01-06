@@ -11,32 +11,31 @@ class Database(IDatabase):
         self.host = host
         self.port = port
 
-        self.connection = self.connect()
-
     def connect(self):
         return psycopg2.connect(database=self.db, user=self.user, password=self.password, host=self.host, port=self.port)
 
-    def query(self, sql: str):
-        # TODO: Validate that this is a query
+    def execute(self, sql: str):
+        # TODO: Validate
 
-        cursor = self.connection.cursor()
+        connection = self.connect()
+
+        cursor = connection.cursor()
         try:
             cursor.execute(sql)
             result = cursor.fetchall()
+
+            connection.commit()
             cursor.close()
+            connection.close()
+
             return result
         except psycopg2.Error as e:
             print(e)
 
+        connection.commit()
         cursor.close()
+        connection.close()
         return None
-
-    def upsert(self, sql: str):
-        # TODO: Validate that this is an update/insert
-
-        cursor = self.connection.cursor()
-        cursor.execute(sql)
-        cursor.close()
 
     def close(self):
         self.connection.close()

@@ -7,11 +7,7 @@ class IDatabase(ABC):
         pass
 
     @abstractmethod
-    def query(self, sql: str):
-        pass
-
-    @abstractmethod
-    def upsert(self, sql: str):
+    def execute(self, sql: str):
         pass
 
     @abstractmethod
