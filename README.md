@@ -1,4 +1,4 @@
-<div align="center"><img src="Resources/sprites/LeBit-card/png/LeBit-card-300px.png"></div>
+<div align="center"><img src="Resources/sprites/LeBit-card/png/lebit-card-300px.png"></div>
 <br />
 <div align="center">LeBit James</div>
 <br />
