@@ -1,5 +1,4 @@
-![LeBit James](./Resources/sprites/LeBit.png)
-
+<div align="center"><img src="./Resources/sprites/LeBit-2.png"></div>
 <br />
 <div align="center">LeBit James</div>
 <br />
