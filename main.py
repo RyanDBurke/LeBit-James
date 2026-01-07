@@ -11,7 +11,7 @@ from Modules.User.UserFactory.UserFactory import UserFactory
 
 
 @inject
-def main(username: str, user_factory: UserFactory = Provide[Container.user_factory]) -> None:
+def run(username: str, user_factory: UserFactory = Provide[Container.user_factory]) -> None:
     user = user_factory.get_user(username)
 
 
