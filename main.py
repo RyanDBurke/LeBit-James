@@ -24,4 +24,4 @@ if __name__ == '__main__':
 
     # get username from input or from the last session
     test_username = os.getenv('TEST_USERNAME')
-    main(test_username)
+    run(test_username)
