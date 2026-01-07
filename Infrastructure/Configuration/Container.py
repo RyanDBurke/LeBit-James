@@ -1,8 +1,11 @@
-import configparser
+"""
+Config mapping
+Register database, services, and their dependencies
+"""
 import os
 
 from dependency_injector import containers, providers
-from dotenv import load_dotenv, dotenv_values
+from dotenv import load_dotenv
 
 from Infrastructure.Database.Database import Database
 from Modules.Fetch.Fetch import Fetch
@@ -43,5 +46,3 @@ class Container(containers.DeclarativeContainer):
         db=db
     )
     # endregion
-
-

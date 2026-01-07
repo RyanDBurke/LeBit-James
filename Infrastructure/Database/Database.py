@@ -1,9 +1,13 @@
+import typing
+
 import psycopg2
+from psycopg2.extras import RealDictCursor
 
 from Infrastructure.Database.IDatabase import IDatabase
 
 
 class Database(IDatabase):
+
     def __init__(self, db: str, user: str, password: str, host: str, port: str):
         self.db = db
         self.user = user
@@ -12,31 +16,23 @@ class Database(IDatabase):
         self.port = port
 
     def connect(self):
-        return psycopg2.connect(database=self.db, user=self.user, password=self.password, host=self.host, port=self.port)
+        return psycopg2.connect(database=self.db, user=self.user, password=self.password, host=self.host,
+                                port=self.port)
 
-    def execute(self, sql: str):
-        # TODO: Validate
-
-        connection = self.connect()
-
-        cursor = connection.cursor()
+    def execute(self, sql: str, params: tuple = None, obj: typing.Callable = None):
         try:
-            cursor.execute(sql)
-            result = cursor.fetchall()
+            with self.connect() as connection:
+                with connection.cursor(cursor_factory=RealDictCursor) as cursor:
+                    cursor.execute(sql, params)
 
-            connection.commit()
-            cursor.close()
-            connection.close()
+                    if cursor.description is None:
+                        return None
 
-            return result
+                    rows = cursor.fetchall()
+                    if obj:
+                        return [obj(**row) for row in rows]
+                    return rows
         except psycopg2.Error as e:
-            print(e)
-
-        connection.commit()
-        cursor.close()
-        connection.close()
-        return None
-
-    def close(self):
-        self.connection.close()
-
+            # TODO: actually log this instead of just printing to console
+            print(f"Database error: {e}")
+            raise

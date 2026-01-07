@@ -7,9 +7,5 @@ class IDatabase(ABC):
         pass
 
     @abstractmethod
-    def execute(self, sql: str):
-        pass
-
-    @abstractmethod
-    def close(self):
+    def execute(self, sql: str, params: tuple = None, obj: object = None):
         pass

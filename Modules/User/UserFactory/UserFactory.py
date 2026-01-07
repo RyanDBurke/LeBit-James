@@ -2,7 +2,6 @@
 Creates and fetches all data necessary for the current User
 """
 import json
-from typing import Any
 
 from Infrastructure.Database.Database import Database
 from Modules.Enums.Sport import Sport
@@ -24,45 +23,83 @@ class UserFactory(IUserFactory):
 
     # region Private Method(s)
     def _get_user(self, username: str) -> User:
-        # check if user already exists in DB and pull that
-        sql = f"""SELECT * FROM "Users" WHERE username = '{username.lower()}' LIMIT 1"""
-        # TODO: turn into User obj
-        user = self.db.execute(sql)
+        # check if a user already exists in DB
+        user_sql = """SELECT *
+                      FROM "Users"
+                      WHERE username = %s LIMIT 1"""
+        user_result = self.db.execute(user_sql, (username.lower(),), User)
 
         # if it exists, return it from DB
-        return user
+        if user_result:
+            if isinstance(user_result[0], User):
+                user: User = user_result[0]
+                user.leagues = self._get_leagues(user.user_id)
+                return user
 
-        # if not, get from Sleeper Api
+        # otherwise, get User from Sleeper Api
         endpoint = f"user/{username}"
         response = self.api.get(endpoint)
         user_obj = json.loads(response, object_hook=lambda d: ComplexNamespace(**d))
         user = User(user_obj.username, user_obj.user_id, user_obj.display_name, user_obj.avatar,
                     self._get_leagues(user_obj.user_id))
 
-        # Add user to database or update if username was changed
-        sql = f"""INSERT INTO "Users" (user_id, username, display_name, avatar_id) VALUES('{user.user_id.lower()}','{user.username.lower()}','{user.display_name.lower()}','{user.avatar_id.lower()}')"""
-        self.db.execute(sql)
+        # Add a user to the db or update their username if it was changed
+        user_id_sql = """SELECT *
+                         FROM "Users"
+                         WHERE user_id = %s LIMIT 1"""
+        user_id_result = self.db.execute(user_id_sql, (user.user_id.lower(),), User)
+
+        # update existing row with new username
+        if user_id_result:
+            user_update_username_sql = """UPDATE "Users"
+                                          SET username = %s
+                                          WHERE user_id = %s"""
+            self.db.execute(user_update_username_sql, (user.username.lower(), user.user_id.lower()))
+        else:
+            user_upsert_sql = """INSERT INTO "Users" (user_id, username, display_name, avatar_id)
+                                 VALUES (%s, %s, %s, %s)"""
+            self.db.execute(user_upsert_sql, (user.user_id.lower(), user.username.lower(), user.display_name.lower(),
+                                              user.avatar_id.lower()))
 
         return user
 
+    def _get_leagues(self, user_id: str) -> list[League]:
+        # see if user's leagues are already in db
+        league_sql = """SELECT league_id, sport, season_year, name
+                        FROM "League"
+                        WHERE user_id = %s"""
+        leagues_result = self.db.execute(league_sql, (user_id.lower(),), League)
 
-    def _get_leagues(self, user_id: int) -> list[League]:
+        # if so, return leagues
+        if leagues_result:
+            leagues = []
+            for l in leagues_result:
+                if isinstance(l, League):
+                    league: League = l
+                    league.teams = self._get_teams_in_league(league.league_id)
+                    leagues.append(league)
+            return leagues
 
+        # otherwise, let's get all these user's leagues
         leagues = []
         for sport in Sport:
             season_year = self._get_sport_season_year(sport)
-
-            # TODO: check if user already exists in DB
-
-            # if not, get from Sleeper Api for each
             endpoint = f"user/{user_id}/leagues/{sport.name.lower()}/{season_year}"
             response = self.api.get(endpoint)
             leagues_obj = json.loads(response, object_hook=lambda d: ComplexNamespace(**d))
 
             for l in leagues_obj:
                 teams = self._get_teams_in_league(l.league_id)
-                leagues.append(League(l.league_id, Sport.convert(l.sport), l.season, l.name, teams))
+                league = League(l.league_id, Sport.convert(l.sport), l.season, l.name, teams)
+                leagues.append(league)
 
+                # add all their leagues to the db
+                for t in teams:
+                    league_upsert_sql = """INSERT INTO "League" (league_id, sport, season_year, name, user_id)
+                                           VALUES (%s, %s, %s, %s, %s)"""
+                    self.db.execute(league_upsert_sql,
+                                    (league.league_id, league.sport.name.lower(), league.season_year, league.name,
+                                     t.user_id))
         return leagues
 
     def _get_sport_season_year(self, sport: Sport) -> str:
@@ -74,14 +111,13 @@ class UserFactory(IUserFactory):
 
     def _get_teams_in_league(self, league_id: str) -> list[Team]:
         teams = []
-
         endpoint = f"/league/{league_id}/users"
         response = self.api.get(endpoint)
         teams_obj = json.loads(response, object_hook=lambda item: ComplexNamespace(**item))
 
         for team in teams_obj:
             nickname = team.metadata.team_name if hasattr(team.metadata, "team_name") else team.display_name
-            teams.append(Team(team.user_id, team.display_name, team.avatar, nickname, team.is_owner))
+            teams.append(Team(league_id, team.user_id, team.display_name, team.avatar, nickname, team.is_owner))
 
         return teams
     # endregion
