@@ -6,15 +6,10 @@ Rectangle {
     anchors.fill: parent
     color: "#301827"
 
-    FontLoader {
-        id: byteBounce
-        source: "../../../Resources/fonts/ByteBounce.ttf"
-    }
-
     ColumnLayout {
         anchors.centerIn: parent
         spacing: 20
-        visible: !loginHandler.loading
+        visible: loginHandler ? !loginHandler.loading : true
 
         Image {
             source: "../../../Resources/sprites/lebit/png/lebit-300px.png"
@@ -37,16 +32,16 @@ Rectangle {
                 border.color: "#7a4a6d"
                 border.width: 1
             }
-            Keys.onReturnPressed: loginHandler.submit(usernameField.text)
+            Keys.onReturnPressed: if (loginHandler) loginHandler.submit(usernameField.text)
         }
 
         Text {
-            text: loginHandler.errorMessage
+            text: loginHandler ? loginHandler.errorMessage : ""
             color: "#ff4444"
             font.family: byteBounce.name
             font.pixelSize: 20
             Layout.alignment: Qt.AlignHCenter
-            visible: loginHandler.errorMessage !== ""
+            visible: loginHandler ? loginHandler.errorMessage !== "" : false
         }
     }
 
@@ -55,14 +50,25 @@ Rectangle {
         source: "../../../Resources/sprites/basketball/png/bball.png"
         fillMode: Image.PreserveAspectFit
         anchors.centerIn: parent
-        visible: loginHandler.loading
+        visible: loginHandler ? loginHandler.loading : false
 
-        RotationAnimation on rotation {
+        RotationAnimation {
+            target: loadingSpinner
+            property: "rotation"
             loops: Animation.Infinite
             from: 0
             to: 360
             duration: 2000
-            running: loginHandler.loading
+            running: loginHandler ? loginHandler.loading : false
+        }
+    }
+
+    Connections {
+        target: loginHandler
+        function onErrorMessageChanged() {
+            if (loginHandler && loginHandler.errorMessage !== "") {
+                usernameField.selectAll()
+            }
         }
     }
 }

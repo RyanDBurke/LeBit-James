@@ -55,15 +55,14 @@ ApplicationWindow {
     Loader {
         id: loginLoader
         anchors.fill: parent
-        active: false
-        visible: !loginHandler.loginSuccess
+        active: !welcomeContent.visible && !(loginHandler && loginHandler.loginSuccess)
         source: "../Login/login.qml"
     }
 
     Loader {
         id: homeLoader
         anchors.fill: parent
-        active: loginHandler.loginSuccess
-        source: loginHandler.currentPage
+        active: loginHandler ? loginHandler.loginSuccess : false
+        source: loginHandler ? loginHandler.currentPage : ""
     }
 }

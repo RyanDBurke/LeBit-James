@@ -35,6 +35,10 @@ class Login(QObject):
 
     @pyqtSlot(str)
     def submit(self, username):
+        if not username.strip():
+            self._error_message = "please enter a username"
+            self.errorMessageChanged.emit()
+            return
         self._error_message = ""
         self.errorMessageChanged.emit()
         self._loading = True
@@ -58,7 +62,13 @@ class Login(QObject):
     @pyqtSlot()
     def logout(self):
         self._login_success = False
+        self._loading = False
+        self._error_message = ""
+        self._current_page = "../Home/home.qml"
         self.loginSuccessChanged.emit()
+        self.loadingChanged.emit()
+        self.errorMessageChanged.emit()
+        self.currentPageChanged.emit()
 
     @pyqtSlot()
     def goHome(self):

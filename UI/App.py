@@ -1,9 +1,10 @@
+import os
 import sys
 import threading
 
 from PyQt6.QtGui import QGuiApplication
 from PyQt6.QtQml import QQmlApplicationEngine
-from PyQt6.QtCore import QMetaObject, Qt, Q_ARG
+from PyQt6.QtCore import QMetaObject, Qt
 
 from UI.Pages.Login.login import Login
 
@@ -11,6 +12,7 @@ from UI.Pages.Login.login import Login
 class App:
     @staticmethod
     def start(on_username=None):
+        os.environ["QT_QUICK_CONTROLS_STYLE"] = "Basic"
         app = QGuiApplication(sys.argv)
 
         engine = QQmlApplicationEngine()
@@ -21,12 +23,15 @@ class App:
 
         def handle_username(username):
             def fetch():
-                result = None
-                if on_username:
-                    result = on_username(username)
-                if result is not None:
-                    QMetaObject.invokeMethod(login, "onLoginSuccess", Qt.ConnectionType.QueuedConnection)
-                else:
+                try:
+                    result = None
+                    if on_username:
+                        result = on_username(username)
+                    if result is not None:
+                        QMetaObject.invokeMethod(login, "onLoginSuccess", Qt.ConnectionType.QueuedConnection)
+                    else:
+                        QMetaObject.invokeMethod(login, "onLoginFailed", Qt.ConnectionType.QueuedConnection)
+                except Exception:
                     QMetaObject.invokeMethod(login, "onLoginFailed", Qt.ConnectionType.QueuedConnection)
 
             threading.Thread(target=fetch, daemon=True).start()

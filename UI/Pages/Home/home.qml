@@ -6,11 +6,6 @@ Rectangle {
     anchors.fill: parent
     color: "#301827"
 
-    FontLoader {
-        id: byteBounce
-        source: "../../../Resources/fonts/ByteBounce.ttf"
-    }
-
     MouseArea {
         anchors.fill: parent
         onClicked: logoutButton.visible = false
@@ -108,6 +103,9 @@ Rectangle {
                 id: basketballArea
                 anchors.fill: parent
                 hoverEnabled: true
+                cursorShape: Qt.PointingHandCursor
+                propagateComposedEvents: true
+                onClicked: function(mouse) { mouse.accepted = false }
             }
         }
 
@@ -125,6 +123,9 @@ Rectangle {
                 id: footballArea
                 anchors.fill: parent
                 hoverEnabled: true
+                cursorShape: Qt.PointingHandCursor
+                propagateComposedEvents: true
+                onClicked: function(mouse) { mouse.accepted = false }
             }
         }
     }
