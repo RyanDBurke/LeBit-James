@@ -1,9 +1,8 @@
-import os
-
 from dependency_injector.wiring import Provide, inject
 
 from Infrastructure.Configuration.Container import Container
 from Modules.User.UserFactory.UserFactory import UserFactory
+from UI.App import App
 
 
 # Press Ctrl+F5 to execute it or replace it with your code.
@@ -11,8 +10,9 @@ from Modules.User.UserFactory.UserFactory import UserFactory
 
 
 @inject
-def run(username: str, user_factory: UserFactory = Provide[Container.user_factory]) -> None:
+def run(username: str, user_factory: UserFactory = Provide[Container.user_factory]):
     user = user_factory.get_user(username)
+    return user
 
 
 if __name__ == '__main__':
@@ -20,8 +20,6 @@ if __name__ == '__main__':
     container.init_resources()
     container.wire(modules=[__name__])
 
-    # run UI
+    # run UI, passing username callback
+    App().start(on_username=lambda username: run(username))
 
-    # get username from input or from the last session
-    test_username = os.getenv('TEST_USERNAME')
-    run(test_username)

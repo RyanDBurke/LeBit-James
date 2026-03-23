@@ -18,7 +18,7 @@ class UserFactory(IUserFactory):
         self.api = api
         self.db = db
 
-    def get_user(self, username: str) -> User:
+    def get_user(self, username: str):
         return self._get_user(username)
 
     # region Private Method(s)
@@ -39,6 +39,11 @@ class UserFactory(IUserFactory):
         # otherwise, get User from Sleeper Api
         endpoint = f"user/{username}"
         response = self.api.get(endpoint)
+
+        # user doesn't exist
+        if not response or response == "null":
+            return None
+
         user_obj = json.loads(response, object_hook=lambda d: ComplexNamespace(**d))
         user = User(user_obj.username, user_obj.user_id, user_obj.display_name, user_obj.avatar,
                     self._get_leagues(user_obj.user_id))
