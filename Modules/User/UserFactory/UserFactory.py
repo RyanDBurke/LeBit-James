@@ -40,6 +40,7 @@ class UserFactory(IUserFactory):
         endpoint = f"user/{username}"
         response = self.api.get(endpoint)
 
+        # user doesn't exist
         if not response or response == "null":
             return None
 
