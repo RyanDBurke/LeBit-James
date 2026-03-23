@@ -76,3 +76,10 @@ class Login(QObject):
         self.currentPageChanged.emit()
         self._current_page = "../Home/home.qml"
         self.currentPageChanged.emit()
+
+    @pyqtSlot()
+    def goAbout(self):
+        self._current_page = ""
+        self.currentPageChanged.emit()
+        self._current_page = "../About/about.qml"
+        self.currentPageChanged.emit()
