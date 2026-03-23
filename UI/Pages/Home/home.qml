@@ -36,6 +36,30 @@ Rectangle {
     }
 
     Image {
+        id: aboutIcon
+        source: "../../../Resources/sprites/about/png/about.png"
+        width: 32
+        height: 32
+        anchors.top: parent.top
+        anchors.right: cogIcon.left
+        anchors.topMargin: 15
+        anchors.rightMargin: 10
+        scale: aboutArea.containsMouse ? 1.2 : 1.0
+
+        Behavior on scale {
+            NumberAnimation { duration: 150; easing.type: Easing.OutQuad }
+        }
+
+        MouseArea {
+            id: aboutArea
+            anchors.fill: parent
+            hoverEnabled: true
+            cursorShape: Qt.PointingHandCursor
+            onClicked: loginHandler.goAbout()
+        }
+    }
+
+    Image {
         id: cogIcon
         source: "../../../Resources/sprites/settings/png/cog.png"
         width: 32
