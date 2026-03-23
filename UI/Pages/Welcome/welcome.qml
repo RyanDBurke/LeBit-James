@@ -64,6 +64,6 @@ ApplicationWindow {
         id: homeLoader
         anchors.fill: parent
         active: loginHandler.loginSuccess
-        source: "../Home/home.qml"
+        source: loginHandler.currentPage
     }
 }

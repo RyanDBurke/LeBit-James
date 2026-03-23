@@ -6,12 +6,14 @@ class Login(QObject):
     loginSuccessChanged = pyqtSignal()
     loadingChanged = pyqtSignal()
     errorMessageChanged = pyqtSignal()
+    currentPageChanged = pyqtSignal()
 
     def __init__(self, engine):
         super().__init__()
         self._login_success = False
         self._loading = False
         self._error_message = ""
+        self._current_page = "../Home/home.qml"
         self.engine = engine
         self.engine.rootContext().setContextProperty("loginHandler", self)
 
@@ -26,6 +28,10 @@ class Login(QObject):
     @pyqtProperty(str, notify=errorMessageChanged)
     def errorMessage(self):
         return self._error_message
+
+    @pyqtProperty(str, notify=currentPageChanged)
+    def currentPage(self):
+        return self._current_page
 
     @pyqtSlot(str)
     def submit(self, username):
@@ -48,3 +54,15 @@ class Login(QObject):
         self.loadingChanged.emit()
         self._error_message = "user doesn't exist!"
         self.errorMessageChanged.emit()
+
+    @pyqtSlot()
+    def logout(self):
+        self._login_success = False
+        self.loginSuccessChanged.emit()
+
+    @pyqtSlot()
+    def goHome(self):
+        self._current_page = ""
+        self.currentPageChanged.emit()
+        self._current_page = "../Home/home.qml"
+        self.currentPageChanged.emit()
