@@ -1,10 +1,19 @@
-import QtQuick 2.15
-import QtQuick.Controls 2.15
-import QtQuick.Layouts 1.15
+import QtQuick
+import QtQuick.Controls
+import QtQuick.Layouts
 
 Rectangle {
     anchors.fill: parent
     color: "#301827"
+
+    FontLoader {
+        id: byteBounce
+        source: "../../../Resources/fonts/ByteBounce.ttf"
+    }
+
+    ListModel {
+        id: cachedUsernamesModel
+    }
 
     ColumnLayout {
         anchors.centerIn: parent
@@ -33,6 +42,79 @@ Rectangle {
                 border.width: 1
             }
             Keys.onReturnPressed: if (loginHandler) loginHandler.submit(usernameField.text)
+        }
+
+        // Cached Usernames ListView
+        Rectangle {
+            Layout.alignment: Qt.AlignHCenter
+            Layout.preferredWidth: 500
+            Layout.preferredHeight: Math.min(cachedUsernamesModel.count * 45, 200)
+            visible: cachedUsernamesModel.count > 0
+            color: "#3a1a2d"
+            radius: 5
+            border.color: "#7a4a6d"
+            border.width: 1
+
+            ListView {
+                anchors.fill: parent
+                anchors.margins: 5
+                model: cachedUsernamesModel
+                clip: true
+                spacing: 5
+
+                delegate: Rectangle {
+                    width: parent.width - 10
+                    height: 40
+                    color: mouseArea.containsMouse ? "#5a3a4d" : "#4a2a3d"
+                    radius: 3
+                    border.color: "#6a4a5d"
+                    border.width: 1
+
+                    MouseArea {
+                        id: mouseArea
+                        anchors.fill: parent
+                        hoverEnabled: true
+                        onClicked: {
+                            usernameField.text = model.username
+                            usernameField.focus = true
+                        }
+                    }
+
+                    RowLayout {
+                        anchors.fill: parent
+                        anchors.margins: 8
+                        spacing: 10
+
+                        Text {
+                            text: model.username
+                            color: "white"
+                            font.family: byteBounce.name
+                            font.pixelSize: 16
+                            Layout.fillWidth: true
+                        }
+
+                        Image {
+                            source: "../../../Resources/sprites/garbage/garbage.png"
+                            Layout.preferredWidth: 24
+                            Layout.preferredHeight: 24
+                            fillMode: Image.PreserveAspectFit
+                            opacity: deleteIconMouse.containsMouse ? 1.0 : 0.7
+
+                            MouseArea {
+                                id: deleteIconMouse
+                                anchors.fill: parent
+                                hoverEnabled: true
+                                cursorShape: Qt.PointingHandCursor
+                                onClicked: {
+                                    if (loginHandler) {
+                                        loginHandler.removeCachedUsername(model.username)
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
 
         Text {
@@ -68,6 +150,21 @@ Rectangle {
         function onErrorMessageChanged() {
             if (loginHandler && loginHandler.errorMessage !== "") {
                 usernameField.selectAll()
+            }
+        }
+        function onCachedUsernamesChanged(usernames) {
+            cachedUsernamesModel.clear()
+            for (let i = 0; i < usernames.length; i++) {
+                cachedUsernamesModel.append({ username: usernames[i] })
+            }
+        }
+    }
+
+    Component.onCompleted: {
+        if (loginHandler) {
+            let usernames = loginHandler.getCachedUsernames()
+            for (let i = 0; i < usernames.length; i++) {
+                cachedUsernamesModel.append({ username: usernames[i] })
             }
         }
     }

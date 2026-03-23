@@ -1,10 +1,14 @@
-import QtQuick 2.15
-import QtQuick.Controls 2.15
-import QtQuick.Layouts 1.15
+import QtQuick
+import QtQuick.Layouts
 
 Rectangle {
     anchors.fill: parent
     color: "#301827"
+
+    FontLoader {
+        id: byteBounce
+        source: "../../../Resources/fonts/ByteBounce.ttf"
+    }
 
     Image {
         id: homeIcon
@@ -51,7 +55,7 @@ Rectangle {
         }
 
         Text {
-            text: "Created by a perennial fantasy sports consolation bracket winner and software engineer." +
+            text: "Created by a perennial fantasy sports consolation bracket winner and software engineer. " +
                   "I figured if I was going to lose my fantasy matchups every week I might as well make it look cool."
             color: "#c0a0b0"
             font.family: byteBounce.name

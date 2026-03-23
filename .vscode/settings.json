@@ -1,0 +1,5 @@
+{
+    "qt-qml.qmlls.additionalImportPaths": [
+        "${workspaceFolder}/.venv/Lib/site-packages/PyQt6/Qt6/qml"
+    ]
+}

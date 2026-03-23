@@ -1,10 +1,15 @@
-import QtQuick 2.15
-import QtQuick.Controls 2.15
-import QtQuick.Layouts 1.15
+import QtQuick
+import QtQuick.Controls
+import QtQuick.Layouts
 
 Rectangle {
     anchors.fill: parent
     color: "#301827"
+
+    FontLoader {
+        id: byteBounce
+        source: "../../../Resources/fonts/ByteBounce.ttf"
+    }
 
     MouseArea {
         anchors.fill: parent

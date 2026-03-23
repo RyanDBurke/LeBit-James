@@ -8,6 +8,7 @@ from dependency_injector import containers, providers
 from dotenv import load_dotenv
 
 from Infrastructure.Database.Database import Database
+from Infrastructure.UserCache.UsernameCache import UsernameCache
 from Modules.Fetch.Fetch import Fetch
 from Modules.SleeperApi.SleeperApi import SleeperApi
 from Modules.User.UserFactory.UserFactory import UserFactory
@@ -40,6 +41,10 @@ class Container(containers.DeclarativeContainer):
     # endregion
 
     # region Services / Factories
+    username_cache = providers.Singleton(
+        UsernameCache
+    )
+
     user_factory = providers.Factory(
         UserFactory,
         api=sleeper_api,
