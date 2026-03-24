@@ -1,8 +1,9 @@
 import json
 import logging
 from pathlib import Path
-from typing import List
+from typing import List, Dict
 from threading import Lock
+from datetime import datetime
 
 from Infrastructure.UserCache.IUsernameCache import IUsernameCache
 
@@ -37,19 +38,90 @@ class UsernameCache(IUsernameCache):
         if not self.cache_file.exists():
             self._write_cache({"usernames": []})
 
-    def get_cached_usernames(self) -> List[str]:
+    def get_cached_usernames(self) -> List[Dict]:
         """
-        Retrieve all cached usernames.
+        Retrieve all cached usernames sorted by favorite status and last login date.
 
         Returns:
-            List of cached usernames in order of storage.
+            List of cached username dictionaries with metadata, sorted by favorite first, then by last login date.
         """
         try:
             data = self._read_cache()
-            return data.get("usernames", [])
+            usernames = data.get("usernames", [])
+            
+            # Migrate old format (strings) to new format (dicts)
+            usernames = self._migrate_usernames(usernames)
+            
+            # Sort: favorites first, then by last_login_date (newest first)
+            sorted_usernames = sorted(
+                usernames,
+                key=lambda x: (not x.get("is_favorite", False), -datetime.fromisoformat(x.get("last_login", "1970-01-01T00:00:00")).timestamp())
+            )
+            return sorted_usernames
         except Exception as e:
             logger.error(f"Error reading username cache: {e}")
             return []
+
+    def _migrate_usernames(self, usernames: List) -> List[Dict]:
+        """
+        Migrate usernames from old string format to new dictionary format.
+
+        Args:
+            usernames: List that may contain strings or dicts
+
+        Returns:
+            List of username dictionaries in new format
+        """
+        migrated = []
+        for item in usernames:
+            if isinstance(item, str):
+                # Old format: just a string
+                migrated.append({
+                    "username": item,
+                    "is_favorite": False,
+                    "last_login": datetime.now().isoformat()
+                })
+            elif isinstance(item, dict):
+                # Already in new format
+                migrated.append(item)
+        
+        # If migration happened, save the migrated data
+        if any(isinstance(item, str) for item in usernames):
+            try:
+                with self._lock:
+                    data = self._read_cache()
+                    data["usernames"] = migrated
+                    self._write_cache(data)
+            except Exception as e:
+                logger.error(f"Error migrating cache: {e}")
+        
+        return migrated
+
+    def _enforce_cache_limit(self, usernames: List[Dict]) -> List[Dict]:
+        """
+        Enforce the cache limit by removing excess usernames.
+        Prioritizes removing oldest non-favorite usernames first.
+        If all are favorites, removes the oldest username.
+
+        Args:
+            usernames: List of username dictionaries
+
+        Returns:
+            trimmed list or usernames
+        """
+        while len(usernames) > self.MAX_CACHED_USERNAMES:
+            # Find oldest non-favorite username
+            non_favorites = [u for u in usernames if not u.get("is_favorite", False)]
+            
+            if non_favorites:
+                # Remove the oldest non-favorite (last in list since it's sorted by date desc)
+                oldest_non_fav = non_favorites[-1]
+                usernames = [u for u in usernames if u.get("username") != oldest_non_fav.get("username")]
+            else:
+                # All are favorites, remove the oldest one
+                usernames = usernames[:-1]
+        
+        return usernames
 
     def add_username(self, username: str) -> None:
         """
@@ -68,15 +140,27 @@ class UsernameCache(IUsernameCache):
                 data = self._read_cache()
                 usernames = data.get("usernames", [])
                 
-                # Prevent duplicates
-                if username not in usernames:
-                    usernames.insert(0, username)  # Add to front (most recent)
-                    # Enforce max limit
-                    if len(usernames) > self.MAX_CACHED_USERNAMES:
-                        usernames = usernames[:self.MAX_CACHED_USERNAMES]
-                    data["usernames"] = usernames
-                    self._write_cache(data)
-                    logger.debug(f"Added username '{username}' to cache")
+                # Migrate old format if needed
+                usernames = self._migrate_usernames(usernames)
+                
+                # Check if username already exists
+                existing_user = next((u for u in usernames if u.get("username") == username), None)
+                if existing_user:
+                    # Update last login date
+                    existing_user["last_login"] = datetime.now().isoformat()
+                else:
+                    # Add new user
+                    usernames.insert(0, {
+                        "username": username,
+                        "is_favorite": False,
+                        "last_login": datetime.now().isoformat()
+                    })
+                    # Enforce max limit with smart removal
+                    usernames = self._enforce_cache_limit(usernames)
+                
+                data["usernames"] = usernames
+                self._write_cache(data)
+                logger.debug(f"Added username '{username}' to cache")
         except Exception as e:
             logger.error(f"Error adding username to cache: {e}")
 
@@ -92,13 +176,39 @@ class UsernameCache(IUsernameCache):
                 data = self._read_cache()
                 usernames = data.get("usernames", [])
                 
-                if username in usernames:
-                    usernames.remove(username)
-                    data["usernames"] = usernames
-                    self._write_cache(data)
-                    logger.debug(f"Removed username '{username}' from cache")
+                # Migrate old format if needed
+                usernames = self._migrate_usernames(usernames)
+                
+                usernames = [u for u in usernames if u.get("username") != username]
+                data["usernames"] = usernames
+                self._write_cache(data)
+                logger.debug(f"Removed username '{username}' from cache")
         except Exception as e:
             logger.error(f"Error removing username from cache: {e}")
+
+    def toggle_favorite(self, username: str) -> None:
+        """
+        Toggle the favorite status of a username.
+
+        Args:
+            username: The username to toggle.
+        """
+        try:
+            with self._lock:
+                data = self._read_cache()
+                usernames = data.get("usernames", [])
+                
+                # Migrate old format if needed
+                usernames = self._migrate_usernames(usernames)
+                
+                user = next((u for u in usernames if u.get("username") == username), None)
+                if user:
+                    user["is_favorite"] = not user.get("is_favorite", False)
+                    data["usernames"] = usernames
+                    self._write_cache(data)
+                    logger.debug(f"Toggled favorite status for '{username}' to {user['is_favorite']}")
+        except Exception as e:
+            logger.error(f"Error toggling favorite: {e}")
 
     def clear_all(self) -> None:
         """Clear all cached usernames."""

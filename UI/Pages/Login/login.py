@@ -59,6 +59,8 @@ class Login(QObject):
         # Add username to cache on successful login
         if self._current_username:
             self.username_cache.add_username(self._current_username)
+            # Emit signal to update cached usernames in UI
+            self.cachedUsernamesChanged.emit(self._format_cached_usernames())
             self._current_username = ""
         self._login_success = True
         self.loginSuccessChanged.emit()
@@ -72,15 +74,28 @@ class Login(QObject):
 
     @pyqtSlot(result=list)
     def getCachedUsernames(self):
-        """Get list of cached usernames."""
-        return self.username_cache.get_cached_usernames()
+        """Get list of cached usernames with their metadata."""
+        return self._format_cached_usernames()
 
     @pyqtSlot(str)
     def removeCachedUsername(self, username: str):
         """Remove a username from the cache."""
         self.username_cache.remove_username(username)
         # Emit signal with updated list
-        self.cachedUsernamesChanged.emit(self.username_cache.get_cached_usernames())
+        self.cachedUsernamesChanged.emit(self._format_cached_usernames())
+
+    @pyqtSlot(str)
+    def toggleFavorite(self, username: str):
+        """Toggle the favorite status of a cached username."""
+        self.username_cache.toggle_favorite(username)
+        # Emit signal with updated list
+        self.cachedUsernamesChanged.emit(self._format_cached_usernames())
+
+    def _format_cached_usernames(self):
+        """Format cached usernames for QML consumption."""
+        usernames = self.username_cache.get_cached_usernames()
+        # Return list of dictionaries with username and is_favorite for QML
+        return [{"username": u.get("username"), "is_favorite": u.get("is_favorite", False)} for u in usernames]
 
     @pyqtSlot()
     def logout(self):
@@ -92,6 +107,8 @@ class Login(QObject):
         self.loadingChanged.emit()
         self.errorMessageChanged.emit()
         self.currentPageChanged.emit()
+        # Refresh cached usernames when returning to login
+        self.cachedUsernamesChanged.emit(self._format_cached_usernames())
 
     @pyqtSlot()
     def goHome(self):
