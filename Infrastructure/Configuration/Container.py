@@ -11,7 +11,8 @@ from Infrastructure.Database.Database import Database
 from Infrastructure.UserCache.UsernameCache import UsernameCache
 from Modules.Fetch.Fetch import Fetch
 from Modules.SleeperApi.SleeperApi import SleeperApi
-from Modules.User.UserFactory.UserFactory import UserFactory
+from Modules.League.LeagueService.LeagueService import LeagueService
+from Modules.User.UserService.UserService import UserService
 
 
 class Container(containers.DeclarativeContainer):
@@ -45,8 +46,14 @@ class Container(containers.DeclarativeContainer):
         UsernameCache
     )
 
-    user_factory = providers.Factory(
-        UserFactory,
+    user_service = providers.Factory(
+        UserService,
+        api=sleeper_api,
+        db=db
+    )
+
+    league_service = providers.Factory(
+        LeagueService,
         api=sleeper_api,
         db=db
     )

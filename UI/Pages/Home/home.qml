@@ -134,7 +134,7 @@ Rectangle {
                 anchors.fill: parent
                 hoverEnabled: true
                 cursorShape: Qt.PointingHandCursor
-                onClicked: homeHandler.goLeagues()
+                onClicked: homeHandler.goLeagues("nba")
             }
         }
 
@@ -153,8 +153,7 @@ Rectangle {
                 anchors.fill: parent
                 hoverEnabled: true
                 cursorShape: Qt.PointingHandCursor
-                propagateComposedEvents: true
-                onClicked: function(mouse) { mouse.accepted = false }
+                onClicked: homeHandler.goLeagues("nfl")
             }
         }
     }

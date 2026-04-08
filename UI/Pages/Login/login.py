@@ -9,6 +9,7 @@ class Login(QObject):
     loadingChanged = pyqtSignal()
     errorMessageChanged = pyqtSignal()
     cachedUsernamesChanged = pyqtSignal(list)
+    userLoaded = pyqtSignal(object)
 
     def __init__(self, engine, navigator):
         super().__init__()
@@ -16,6 +17,7 @@ class Login(QObject):
         self._loading = False
         self._error_message = ""
         self._current_username = ""
+        self._fetched_user = None
         self._navigator = navigator
         self.engine = engine
         # Resolve dependency from container
@@ -34,11 +36,16 @@ class Login(QObject):
     def errorMessage(self):
         return self._error_message
 
+    def set_fetched_user(self, user):
+        self._fetched_user = user
+
     @pyqtSlot(str)
     def submit(self, username):
         if not username.strip():
             self._error_message = "please enter a username"
             self.errorMessageChanged.emit()
+            return
+        if self._loading:
             return
         self._current_username = username.strip()
         self._error_message = ""
@@ -51,6 +58,10 @@ class Login(QObject):
     def onLoginSuccess(self):
         self._loading = False
         self.loadingChanged.emit()
+
+        if self._fetched_user is not None:
+            self.userLoaded.emit(self._fetched_user)
+            self._fetched_user = None
 
         # Add username to cache on successful login
         if self._current_username:

@@ -16,18 +16,21 @@ from UI.Pages.Home.home import Home
 from UI.Pages.About.about import About
 from UI.Pages.Leagues.leagues import Leagues
 
+from Modules.League.LeagueService.ILeagueService import ILeagueService
+
 logger = logging.getLogger(__name__)
 
 LOGIN_SUCCESS = "onLoginSuccess"
 LOGIN_FAILED = "onLoginFailed"
 
-# Tell Windows this is its own app so the taskbar uses our icon
-ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID("lebitjames.app")
-
 class App:
     @staticmethod
-    def start(on_username: Callable[[str], Any] | None = None) -> None:
+    def start(on_username: Callable[[str], Any] | None = None, league_service: ILeagueService = None) -> None:
         """Start the application. This method never returns; it calls sys.exit."""
+        # Tell Windows this is its own app so the taskbar uses our icon
+        if sys.platform == "win32":
+            ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID("lebitjames.app")
+
         os.environ["QT_QUICK_CONTROLS_STYLE"] = "Basic"
         app = QGuiApplication(sys.argv)
 
@@ -43,9 +46,14 @@ class App:
         # Set up handlers before loading QML so context properties are available
         navigator = Navigator(engine)
         login = Login(engine, navigator)
-        home = Home(navigator, login, engine)
+        leagues = Leagues(navigator, login, engine, league_service)
+        home = Home(navigator, login, leagues, engine)
         about = About(navigator, engine)
-        leagues = Leagues(navigator, login, engine)
+
+        # Keep references so handlers aren't garbage collected
+        handlers = [navigator, login, leagues, home, about]
+
+        login.userLoaded.connect(leagues.setUser)
 
         def process_login(username):
             """
@@ -58,6 +66,7 @@ class App:
                     if on_username:
                         result = on_username(username)
                     if result is not None:
+                        login.set_fetched_user(result)
                         QMetaObject.invokeMethod(login, LOGIN_SUCCESS, Qt.ConnectionType.QueuedConnection)
                     else:
                         QMetaObject.invokeMethod(login, LOGIN_FAILED, Qt.ConnectionType.QueuedConnection)
