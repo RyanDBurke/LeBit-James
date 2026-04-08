@@ -10,7 +10,11 @@ from PyQt6.QtGui import QGuiApplication, QIcon, QPixmap
 from PyQt6.QtQml import QQmlApplicationEngine
 from PyQt6.QtCore import QMetaObject, Qt
 
+from UI.Navigator import Navigator
 from UI.Pages.Login.login import Login
+from UI.Pages.Home.home import Home
+from UI.Pages.About.about import About
+from UI.Pages.Leagues.leagues import Leagues
 
 logger = logging.getLogger(__name__)
 
@@ -37,7 +41,11 @@ class App:
         engine.quit.connect(app.quit)
 
         # Set up handlers before loading QML so context properties are available
-        login = Login(engine)
+        navigator = Navigator(engine)
+        login = Login(engine, navigator)
+        home = Home(navigator, login, engine)
+        about = About(navigator, engine)
+        leagues = Leagues(navigator, login, engine)
 
         def process_login(username):
             """

@@ -31,7 +31,7 @@ Rectangle {
             anchors.fill: parent
             hoverEnabled: true
             cursorShape: Qt.PointingHandCursor
-            onClicked: loginHandler.goHome()
+            onClicked: aboutHandler.goHome()
         }
     }
 

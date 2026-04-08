@@ -37,7 +37,7 @@ Rectangle {
             anchors.fill: parent
             hoverEnabled: true
             cursorShape: Qt.PointingHandCursor
-            onClicked: loginHandler.goHome()
+            onClicked: homeHandler.goHome()
         }
     }
 
@@ -61,7 +61,7 @@ Rectangle {
             anchors.fill: parent
             hoverEnabled: true
             cursorShape: Qt.PointingHandCursor
-            onClicked: loginHandler.goAbout()
+            onClicked: homeHandler.goAbout()
         }
     }
 
@@ -112,7 +112,7 @@ Rectangle {
             border.width: 1
         }
 
-        onClicked: loginHandler.logout()
+        onClicked: homeHandler.logout()
     }
 
     RowLayout {
@@ -134,7 +134,7 @@ Rectangle {
                 anchors.fill: parent
                 hoverEnabled: true
                 cursorShape: Qt.PointingHandCursor
-                onClicked: loginHandler.goLeagues()
+                onClicked: homeHandler.goLeagues()
             }
         }
 

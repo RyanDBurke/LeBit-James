@@ -8,16 +8,15 @@ class Login(QObject):
     loginSuccessChanged = pyqtSignal()
     loadingChanged = pyqtSignal()
     errorMessageChanged = pyqtSignal()
-    currentPageChanged = pyqtSignal()
     cachedUsernamesChanged = pyqtSignal(list)
 
-    def __init__(self, engine):
+    def __init__(self, engine, navigator):
         super().__init__()
         self._login_success = False
         self._loading = False
         self._error_message = ""
-        self._current_page = "../Home/home.qml"
         self._current_username = ""
+        self._navigator = navigator
         self.engine = engine
         # Resolve dependency from container
         self.username_cache = Container.username_cache()
@@ -34,10 +33,6 @@ class Login(QObject):
     @pyqtProperty(str, notify=errorMessageChanged)
     def errorMessage(self):
         return self._error_message
-
-    @pyqtProperty(str, notify=currentPageChanged)
-    def currentPage(self):
-        return self._current_page
 
     @pyqtSlot(str)
     def submit(self, username):
@@ -106,31 +101,9 @@ class Login(QObject):
         self._login_success = False
         self._loading = False
         self._error_message = ""
-        self._current_page = "../Home/home.qml"
         self.loginSuccessChanged.emit()
         self.loadingChanged.emit()
         self.errorMessageChanged.emit()
-        self.currentPageChanged.emit()
+        self._navigator.reset()
         # Refresh cached usernames when returning to login
         self.cachedUsernamesChanged.emit(self._format_cached_usernames())
-
-    @pyqtSlot()
-    def goHome(self):
-        self._current_page = ""
-        self.currentPageChanged.emit()
-        self._current_page = "../Home/home.qml"
-        self.currentPageChanged.emit()
-
-    @pyqtSlot()
-    def goAbout(self):
-        self._current_page = ""
-        self.currentPageChanged.emit()
-        self._current_page = "../About/about.qml"
-        self.currentPageChanged.emit()
-
-    @pyqtSlot()
-    def goLeagues(self):
-        self._current_page = ""
-        self.currentPageChanged.emit()
-        self._current_page = "../Leagues/leagues.qml"
-        self.currentPageChanged.emit()

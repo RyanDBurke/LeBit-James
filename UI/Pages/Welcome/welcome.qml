@@ -64,6 +64,6 @@ ApplicationWindow {
         id: homeLoader
         anchors.fill: parent
         active: loginHandler ? loginHandler.loginSuccess : false
-        source: loginHandler ? loginHandler.currentPage : ""
+        source: navigator ? navigator.currentPage : ""
     }
 }

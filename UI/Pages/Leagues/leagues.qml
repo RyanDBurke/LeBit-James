@@ -38,7 +38,7 @@ Rectangle {
             anchors.fill: parent
             hoverEnabled: true
             cursorShape: Qt.PointingHandCursor
-            onClicked: loginHandler.goHome()
+            onClicked: leaguesHandler.goHome()
         }
     }
 
@@ -89,7 +89,7 @@ Rectangle {
             border.width: 1
         }
 
-        onClicked: loginHandler.logout()
+        onClicked: leaguesHandler.logout()
     }
 
     ColumnLayout {
