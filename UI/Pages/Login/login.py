@@ -56,9 +56,11 @@ class Login(QObject):
     def onLoginSuccess(self):
         self._loading = False
         self.loadingChanged.emit()
+
         # Add username to cache on successful login
         if self._current_username:
             self.username_cache.add_username(self._current_username)
+
             # Emit signal to update cached usernames in UI
             self.cachedUsernamesChanged.emit(self._format_cached_usernames())
             self._current_username = ""
@@ -88,12 +90,14 @@ class Login(QObject):
     def toggleFavorite(self, username: str):
         """Toggle the favorite status of a cached username."""
         self.username_cache.toggle_favorite(username)
+
         # Emit signal with updated list
         self.cachedUsernamesChanged.emit(self._format_cached_usernames())
 
     def _format_cached_usernames(self):
         """Format cached usernames for QML consumption."""
         usernames = self.username_cache.get_cached_usernames()
+        
         # Return list of dictionaries with username and is_favorite for QML
         return [{"username": u.get("username"), "is_favorite": u.get("is_favorite", False)} for u in usernames]
 
@@ -122,4 +126,11 @@ class Login(QObject):
         self._current_page = ""
         self.currentPageChanged.emit()
         self._current_page = "../About/about.qml"
+        self.currentPageChanged.emit()
+
+    @pyqtSlot()
+    def goLeagues(self):
+        self._current_page = ""
+        self.currentPageChanged.emit()
+        self._current_page = "../Leagues/leagues.qml"
         self.currentPageChanged.emit()

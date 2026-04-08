@@ -48,10 +48,6 @@ class UsernameCache(IUsernameCache):
         try:
             data = self._read_cache()
             usernames = data.get("usernames", [])
-            
-            # Migrate old format (strings) to new format (dicts)
-            usernames = self._migrate_usernames(usernames)
-            
             # Sort: favorites first, then by last_login_date (newest first)
             sorted_usernames = sorted(
                 usernames,
@@ -62,40 +58,7 @@ class UsernameCache(IUsernameCache):
             logger.error(f"Error reading username cache: {e}")
             return []
 
-    def _migrate_usernames(self, usernames: List) -> List[Dict]:
-        """
-        Migrate usernames from old string format to new dictionary format.
 
-        Args:
-            usernames: List that may contain strings or dicts
-
-        Returns:
-            List of username dictionaries in new format
-        """
-        migrated = []
-        for item in usernames:
-            if isinstance(item, str):
-                # Old format: just a string
-                migrated.append({
-                    "username": item,
-                    "is_favorite": False,
-                    "last_login": datetime.now().isoformat()
-                })
-            elif isinstance(item, dict):
-                # Already in new format
-                migrated.append(item)
-        
-        # If migration happened, save the migrated data
-        if any(isinstance(item, str) for item in usernames):
-            try:
-                with self._lock:
-                    data = self._read_cache()
-                    data["usernames"] = migrated
-                    self._write_cache(data)
-            except Exception as e:
-                logger.error(f"Error migrating cache: {e}")
-        
-        return migrated
 
     def _enforce_cache_limit(self, usernames: List[Dict]) -> List[Dict]:
         """
@@ -139,10 +102,6 @@ class UsernameCache(IUsernameCache):
             with self._lock:
                 data = self._read_cache()
                 usernames = data.get("usernames", [])
-                
-                # Migrate old format if needed
-                usernames = self._migrate_usernames(usernames)
-                
                 # Check if username already exists
                 existing_user = next((u for u in usernames if u.get("username") == username), None)
                 if existing_user:
@@ -157,7 +116,6 @@ class UsernameCache(IUsernameCache):
                     })
                     # Enforce max limit with smart removal
                     usernames = self._enforce_cache_limit(usernames)
-                
                 data["usernames"] = usernames
                 self._write_cache(data)
                 logger.debug(f"Added username '{username}' to cache")
@@ -175,10 +133,6 @@ class UsernameCache(IUsernameCache):
             with self._lock:
                 data = self._read_cache()
                 usernames = data.get("usernames", [])
-                
-                # Migrate old format if needed
-                usernames = self._migrate_usernames(usernames)
-                
                 usernames = [u for u in usernames if u.get("username") != username]
                 data["usernames"] = usernames
                 self._write_cache(data)
@@ -197,10 +151,6 @@ class UsernameCache(IUsernameCache):
             with self._lock:
                 data = self._read_cache()
                 usernames = data.get("usernames", [])
-                
-                # Migrate old format if needed
-                usernames = self._migrate_usernames(usernames)
-                
                 user = next((u for u in usernames if u.get("username") == username), None)
                 if user:
                     user["is_favorite"] = not user.get("is_favorite", False)
@@ -247,10 +197,12 @@ class UsernameCache(IUsernameCache):
         try:
             with open(temp_file, "w") as f:
                 json.dump(data, f, indent=2)
+
             # Atomic rename
             temp_file.replace(self.cache_file)
         except Exception as e:
             logger.error(f"Error writing username cache: {e}")
+            
             # Clean up temp file if it exists
             try:
                 temp_file.unlink()

@@ -8,11 +8,12 @@ ApplicationWindow {
     minimumWidth: 400
     minimumHeight: 400
     title: "LeBit James"
+    readonly property string basePath: "../../../"
     //flags: Qt.FramelessWindowHint | Qt.Window
 
     FontLoader {
         id: byteBounce
-        source: "../../../Resources/fonts/ByteBounce.ttf"
+        source: basePath + "Resources/fonts/ByteBounce.ttf"
     }
 
     Rectangle {
@@ -22,7 +23,7 @@ ApplicationWindow {
         visible: true
 
         Image {
-            source: "../../../Resources/sprites/lebit/png/lebit-300px.png"
+            source: basePath + "Resources/sprites/lebit/png/lebit-300px.png"
             fillMode: Image.PreserveAspectFit
             anchors.centerIn: parent
         }

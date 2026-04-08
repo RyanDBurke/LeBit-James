@@ -6,8 +6,7 @@ from UI.App import App
 
 @inject
 def run(username: str, user_factory: UserFactory = Provide[Container.user_factory]):
-    user = user_factory.get_user(username)
-    return user
+    return user_factory.get_user(username)
 
 
 if __name__ == '__main__':

@@ -5,10 +5,11 @@ import QtQuick.Layouts
 Rectangle {
     anchors.fill: parent
     color: "#301827"
+    readonly property string basePath: "../../../"
 
     FontLoader {
         id: byteBounce
-        source: "../../../Resources/fonts/ByteBounce.ttf"
+        source: basePath + "Resources/fonts/ByteBounce.ttf"
     }
 
     ListModel {
@@ -21,7 +22,7 @@ Rectangle {
         visible: loginHandler ? !loginHandler.loading : true
 
         Image {
-            source: "../../../Resources/sprites/lebit/png/lebit-300px.png"
+            source: basePath + "Resources/sprites/lebit/png/lebit-300px.png"
             fillMode: Image.PreserveAspectFit
             Layout.alignment: Qt.AlignHCenter
         }
@@ -86,7 +87,7 @@ Rectangle {
                     }
 
                     Image {
-                        source: "../../../Resources/sprites/favorite/fav-star.png"
+                        source: basePath + "Resources/sprites/favorite/fav-star.png"
                         Layout.preferredWidth: 24
                         Layout.preferredHeight: 24
                         fillMode: Image.PreserveAspectFit
@@ -106,7 +107,7 @@ Rectangle {
                     }
 
                     Image {
-                        source: "../../../Resources/sprites/garbage/garbage.png"
+                        source: basePath + "Resources/sprites/garbage/garbage.png"
                         Layout.preferredWidth: 24
                         Layout.preferredHeight: 24
                         fillMode: Image.PreserveAspectFit
@@ -140,7 +141,7 @@ Rectangle {
 
     Image {
         id: loadingSpinner
-        source: "../../../Resources/sprites/basketball/png/bball.png"
+        source: basePath + "Resources/sprites/basketball/png/bball.png"
         fillMode: Image.PreserveAspectFit
         anchors.centerIn: parent
         visible: loginHandler ? loginHandler.loading : false
@@ -165,24 +166,24 @@ Rectangle {
         }
         function onCachedUsernamesChanged(usernames) {
             cachedUsernamesModel.clear()
-            for (let i = 0; i < usernames.length; i++) {
+            usernames.forEach(function(user) {
                 cachedUsernamesModel.append({
-                    username: usernames[i].username,
-                    is_favorite: usernames[i].is_favorite
+                    username: user.username,
+                    is_favorite: user.is_favorite
                 })
-            }
+            })
         }
     }
 
     Component.onCompleted: {
         if (loginHandler) {
             let usernames = loginHandler.getCachedUsernames()
-            for (let i = 0; i < usernames.length; i++) {
+            usernames.forEach(function(user) {
                 cachedUsernamesModel.append({
-                    username: usernames[i].username,
-                    is_favorite: usernames[i].is_favorite
+                    username: user.username,
+                    is_favorite: user.is_favorite
                 })
-            }
+            })
         }
     }
 }

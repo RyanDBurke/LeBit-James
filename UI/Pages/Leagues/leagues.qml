@@ -5,6 +5,7 @@ import QtQuick.Layouts
 Rectangle {
     anchors.fill: parent
     color: "#301827"
+    property var user: null // Set this property from your navigation logic
     readonly property string basePath: "../../../"
 
     FontLoader {
@@ -38,30 +39,6 @@ Rectangle {
             hoverEnabled: true
             cursorShape: Qt.PointingHandCursor
             onClicked: loginHandler.goHome()
-        }
-    }
-
-    Image {
-        id: aboutIcon
-        source: basePath + "Resources/sprites/about/png/about.png"
-        width: 32
-        height: 32
-        anchors.top: parent.top
-        anchors.right: cogIcon.left
-        anchors.topMargin: 15
-        anchors.rightMargin: 10
-        scale: aboutArea.containsMouse ? 1.2 : 1.0
-
-        Behavior on scale {
-            NumberAnimation { duration: 150; easing.type: Easing.OutQuad }
-        }
-
-        MouseArea {
-            id: aboutArea
-            anchors.fill: parent
-            hoverEnabled: true
-            cursorShape: Qt.PointingHandCursor
-            onClicked: loginHandler.goAbout()
         }
     }
 
@@ -115,47 +92,43 @@ Rectangle {
         onClicked: loginHandler.logout()
     }
 
-    RowLayout {
+    ColumnLayout {
         anchors.centerIn: parent
-        spacing: 40
+        spacing: 20
 
-        Image {
-            id: basketballCard
-            source: basePath + "Resources/sprites/basketball-card/png/basketball-card-300px.png"
-            fillMode: Image.PreserveAspectFit
-            scale: basketballArea.containsMouse ? 1.1 : 1.0
-
-            Behavior on scale {
-                NumberAnimation { duration: 200; easing.type: Easing.OutQuad }
-            }
-
-            MouseArea {
-                id: basketballArea
-                anchors.fill: parent
-                hoverEnabled: true
-                cursorShape: Qt.PointingHandCursor
-                onClicked: loginHandler.goLeagues()
-            }
+        Text {
+            text: "Your Leagues"
+            font.pixelSize: 28
+            color: "#fff"
+            font.bold: true
+            horizontalAlignment: Text.AlignHCenter
+            Layout.alignment: Qt.AlignHCenter
         }
 
-        Image {
-            id: footballCard
-            source: basePath + "Resources/sprites/football-card/png/football-card-300px.png"
-            fillMode: Image.PreserveAspectFit
-            scale: footballArea.containsMouse ? 1.1 : 1.0
-
-            Behavior on scale {
-                NumberAnimation { duration: 200; easing.type: Easing.OutQuad }
+        ListView {
+            id: leagueList
+            width: 400
+            height: 300
+            model: user && user.leagues ? user.leagues : []
+            delegate: Rectangle {
+                width: parent.width
+                height: 40
+                color: index % 2 === 0 ? "#3a2040" : "#4a2a3d"
+                radius: 5
+                border.color: "#7a4a6d"
+                border.width: 1
+                RowLayout {
+                    anchors.fill: parent
+                    spacing: 10
+                    Text {
+                        text: modelData.name
+                        color: "#fff"
+                        font.pixelSize: 20
+                        Layout.alignment: Qt.AlignVCenter
+                    }
+                }
             }
-
-            MouseArea {
-                id: footballArea
-                anchors.fill: parent
-                hoverEnabled: true
-                cursorShape: Qt.PointingHandCursor
-                propagateComposedEvents: true
-                onClicked: function(mouse) { mouse.accepted = false }
-            }
+            clip: true
         }
     }
 }

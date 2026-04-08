@@ -4,15 +4,16 @@ import QtQuick.Layouts
 Rectangle {
     anchors.fill: parent
     color: "#301827"
+    readonly property string basePath: "../../../"
 
     FontLoader {
         id: byteBounce
-        source: "../../../Resources/fonts/ByteBounce.ttf"
+        source: basePath + "Resources/fonts/ByteBounce.ttf"
     }
 
     Image {
         id: homeIcon
-        source: "../../../Resources/sprites/home/png/home.png"
+        source: basePath + "Resources/sprites/home/png/home.png"
         width: 32
         height: 32
         anchors.top: parent.top
@@ -40,7 +41,7 @@ Rectangle {
         width: parent.width * 0.8
 
         Image {
-            source: "../../../Resources/sprites/author/author.png"
+            source: basePath + "Resources/sprites/author/author.png"
             fillMode: Image.PreserveAspectFit
             scale: 0.7
             Layout.alignment: Qt.AlignHCenter
@@ -80,7 +81,7 @@ Rectangle {
 
             Image {
                 id: githubIcon
-                source: "../../../Resources/sprites/github/github.png"
+                source: basePath + "Resources/sprites/github/github.png"
                 sourceSize.width: 36
                 sourceSize.height: 36
                 scale: githubArea.containsMouse ? 1.2 : 1.0
@@ -100,7 +101,7 @@ Rectangle {
 
             Image {
                 id: websiteIcon
-                source: "../../../Resources/sprites/website/website.png"
+                source: basePath + "Resources/sprites/website/website.png"
                 sourceSize.width: 36
                 sourceSize.height: 36
                 scale: websiteArea.containsMouse ? 1.2 : 1.0
