@@ -1,10 +1,20 @@
-import QtQuick 2.15
-import QtQuick.Controls 2.15
-import QtQuick.Layouts 1.15
+import QtQuick
+import QtQuick.Controls
+import QtQuick.Layouts
 
 Rectangle {
     anchors.fill: parent
     color: "#301827"
+    readonly property string basePath: "../../../"
+
+    FontLoader {
+        id: byteBounce
+        source: basePath + "Resources/fonts/ByteBounce.ttf"
+    }
+
+    ListModel {
+        id: cachedUsernamesModel
+    }
 
     ColumnLayout {
         anchors.centerIn: parent
@@ -12,7 +22,7 @@ Rectangle {
         visible: loginHandler ? !loginHandler.loading : true
 
         Image {
-            source: "../../../Resources/sprites/lebit/png/lebit-300px.png"
+            source: basePath + "Resources/sprites/lebit/png/lebit-300px.png"
             fillMode: Image.PreserveAspectFit
             Layout.alignment: Qt.AlignHCenter
         }
@@ -35,6 +45,90 @@ Rectangle {
             Keys.onReturnPressed: if (loginHandler) loginHandler.submit(usernameField.text)
         }
 
+        // Cached Usernames ListView
+        ListView {
+            Layout.alignment: Qt.AlignHCenter
+            Layout.preferredWidth: 500
+            Layout.preferredHeight: Math.min(cachedUsernamesModel.count * 45, 200)
+            visible: cachedUsernamesModel.count > 0
+            model: cachedUsernamesModel
+            clip: true
+            spacing: 5
+            delegate: Rectangle {
+                width: 500
+                height: 40
+                color: mouseArea.containsMouse ? "#5a3a4d" : "#4a2a3d"
+                radius: 3
+                border.color: "#6a4a5d"
+                border.width: 1
+
+                MouseArea {
+                    id: mouseArea
+                    anchors.fill: parent
+                    hoverEnabled: true
+                    onClicked: {
+                        if (loginHandler) {
+                            loginHandler.submit(model.username)
+                        }
+                    }
+                }
+
+                RowLayout {
+                    anchors.fill: parent
+                    anchors.margins: 8
+                    spacing: 10
+
+                    Text {
+                        text: model.username
+                        color: "white"
+                        font.family: byteBounce.name
+                        font.pixelSize: 16
+                        Layout.fillWidth: true
+                    }
+
+                    Image {
+                        source: basePath + "Resources/sprites/favorite/fav-star.png"
+                        Layout.preferredWidth: 24
+                        Layout.preferredHeight: 24
+                        fillMode: Image.PreserveAspectFit
+                        opacity: model.is_favorite ? 1.0 : 0.4
+
+                        MouseArea {
+                            id: favoriteIconMouse
+                            anchors.fill: parent
+                            hoverEnabled: true
+                            cursorShape: Qt.PointingHandCursor
+                            onClicked: {
+                                if (loginHandler) {
+                                    loginHandler.toggleFavorite(model.username)
+                                }
+                            }
+                        }
+                    }
+
+                    Image {
+                        source: basePath + "Resources/sprites/garbage/garbage.png"
+                        Layout.preferredWidth: 24
+                        Layout.preferredHeight: 24
+                        fillMode: Image.PreserveAspectFit
+                        opacity: deleteIconMouse.containsMouse ? 1.0 : 0.7
+
+                        MouseArea {
+                            id: deleteIconMouse
+                            anchors.fill: parent
+                            hoverEnabled: true
+                            cursorShape: Qt.PointingHandCursor
+                            onClicked: {
+                                if (loginHandler) {
+                                    loginHandler.removeCachedUsername(model.username)
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
         Text {
             text: loginHandler ? loginHandler.errorMessage : ""
             color: "#ff4444"
@@ -47,7 +141,7 @@ Rectangle {
 
     Image {
         id: loadingSpinner
-        source: "../../../Resources/sprites/basketball/png/bball.png"
+        source: basePath + "Resources/sprites/basketball/png/bball.png"
         fillMode: Image.PreserveAspectFit
         anchors.centerIn: parent
         visible: loginHandler ? loginHandler.loading : false
@@ -69,6 +163,27 @@ Rectangle {
             if (loginHandler && loginHandler.errorMessage !== "") {
                 usernameField.selectAll()
             }
+        }
+        function onCachedUsernamesChanged(usernames) {
+            cachedUsernamesModel.clear()
+            usernames.forEach(function(user) {
+                cachedUsernamesModel.append({
+                    username: user.username,
+                    is_favorite: user.is_favorite
+                })
+            })
+        }
+    }
+
+    Component.onCompleted: {
+        if (loginHandler) {
+            let usernames = loginHandler.getCachedUsernames()
+            usernames.forEach(function(user) {
+                cachedUsernamesModel.append({
+                    username: user.username,
+                    is_favorite: user.is_favorite
+                })
+            })
         }
     }
 }

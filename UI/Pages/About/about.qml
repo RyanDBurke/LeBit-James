@@ -1,14 +1,19 @@
-import QtQuick 2.15
-import QtQuick.Controls 2.15
-import QtQuick.Layouts 1.15
+import QtQuick
+import QtQuick.Layouts
 
 Rectangle {
     anchors.fill: parent
     color: "#301827"
+    readonly property string basePath: "../../../"
+
+    FontLoader {
+        id: byteBounce
+        source: basePath + "Resources/fonts/ByteBounce.ttf"
+    }
 
     Image {
         id: homeIcon
-        source: "../../../Resources/sprites/home/png/home.png"
+        source: basePath + "Resources/sprites/home/png/home.png"
         width: 32
         height: 32
         anchors.top: parent.top
@@ -26,7 +31,7 @@ Rectangle {
             anchors.fill: parent
             hoverEnabled: true
             cursorShape: Qt.PointingHandCursor
-            onClicked: loginHandler.goHome()
+            onClicked: aboutHandler.goHome()
         }
     }
 
@@ -36,7 +41,7 @@ Rectangle {
         width: parent.width * 0.8
 
         Image {
-            source: "../../../Resources/sprites/author/author.png"
+            source: basePath + "Resources/sprites/author/author.png"
             fillMode: Image.PreserveAspectFit
             scale: 0.7
             Layout.alignment: Qt.AlignHCenter
@@ -51,7 +56,7 @@ Rectangle {
         }
 
         Text {
-            text: "Created by a perennial fantasy sports consolation bracket winner and software engineer." +
+            text: "Created by a perennial fantasy sports consolation bracket winner and software engineer. " +
                   "I figured if I was going to lose my fantasy matchups every week I might as well make it look cool."
             color: "#c0a0b0"
             font.family: byteBounce.name
@@ -76,7 +81,7 @@ Rectangle {
 
             Image {
                 id: githubIcon
-                source: "../../../Resources/sprites/github/github.png"
+                source: basePath + "Resources/sprites/github/github.png"
                 sourceSize.width: 36
                 sourceSize.height: 36
                 scale: githubArea.containsMouse ? 1.2 : 1.0
@@ -96,7 +101,7 @@ Rectangle {
 
             Image {
                 id: websiteIcon
-                source: "../../../Resources/sprites/website/website.png"
+                source: basePath + "Resources/sprites/website/website.png"
                 sourceSize.width: 36
                 sourceSize.height: 36
                 scale: websiteArea.containsMouse ? 1.2 : 1.0

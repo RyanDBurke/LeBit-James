@@ -1,5 +1,5 @@
-import QtQuick 2.15
-import QtQuick.Controls 2.15
+import QtQuick
+import QtQuick.Controls
 
 ApplicationWindow {
     visible: true
@@ -8,11 +8,12 @@ ApplicationWindow {
     minimumWidth: 400
     minimumHeight: 400
     title: "LeBit James"
+    readonly property string basePath: "../../../"
     //flags: Qt.FramelessWindowHint | Qt.Window
 
     FontLoader {
         id: byteBounce
-        source: "../../../Resources/fonts/ByteBounce.ttf"
+        source: basePath + "Resources/fonts/ByteBounce.ttf"
     }
 
     Rectangle {
@@ -22,7 +23,7 @@ ApplicationWindow {
         visible: true
 
         Image {
-            source: "../../../Resources/sprites/lebit/png/lebit-300px.png"
+            source: basePath + "Resources/sprites/lebit/png/lebit-300px.png"
             fillMode: Image.PreserveAspectFit
             anchors.centerIn: parent
         }
@@ -63,6 +64,6 @@ ApplicationWindow {
         id: homeLoader
         anchors.fill: parent
         active: loginHandler ? loginHandler.loginSuccess : false
-        source: loginHandler ? loginHandler.currentPage : ""
+        source: navigator ? navigator.currentPage : ""
     }
 }

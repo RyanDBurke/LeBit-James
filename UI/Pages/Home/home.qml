@@ -1,10 +1,16 @@
-import QtQuick 2.15
-import QtQuick.Controls 2.15
-import QtQuick.Layouts 1.15
+import QtQuick
+import QtQuick.Controls
+import QtQuick.Layouts
 
 Rectangle {
     anchors.fill: parent
     color: "#301827"
+    readonly property string basePath: "../../../"
+
+    FontLoader {
+        id: byteBounce
+        source: basePath + "Resources/fonts/ByteBounce.ttf"
+    }
 
     MouseArea {
         anchors.fill: parent
@@ -13,7 +19,7 @@ Rectangle {
 
     Image {
         id: homeIcon
-        source: "../../../Resources/sprites/home/png/home.png"
+        source: basePath + "Resources/sprites/home/png/home.png"
         width: 32
         height: 32
         anchors.top: parent.top
@@ -31,13 +37,13 @@ Rectangle {
             anchors.fill: parent
             hoverEnabled: true
             cursorShape: Qt.PointingHandCursor
-            onClicked: loginHandler.goHome()
+            onClicked: homeHandler.goHome()
         }
     }
 
     Image {
         id: aboutIcon
-        source: "../../../Resources/sprites/about/png/about.png"
+        source: basePath + "Resources/sprites/about/png/about.png"
         width: 32
         height: 32
         anchors.top: parent.top
@@ -55,13 +61,13 @@ Rectangle {
             anchors.fill: parent
             hoverEnabled: true
             cursorShape: Qt.PointingHandCursor
-            onClicked: loginHandler.goAbout()
+            onClicked: homeHandler.goAbout()
         }
     }
 
     Image {
         id: cogIcon
-        source: "../../../Resources/sprites/settings/png/cog.png"
+        source: basePath + "Resources/sprites/settings/png/cog.png"
         width: 32
         height: 32
         anchors.top: parent.top
@@ -106,7 +112,7 @@ Rectangle {
             border.width: 1
         }
 
-        onClicked: loginHandler.logout()
+        onClicked: homeHandler.logout()
     }
 
     RowLayout {
@@ -115,7 +121,7 @@ Rectangle {
 
         Image {
             id: basketballCard
-            source: "../../../Resources/sprites/basketball-card/png/basketball-card-300px.png"
+            source: basePath + "Resources/sprites/basketball-card/png/basketball-card-300px.png"
             fillMode: Image.PreserveAspectFit
             scale: basketballArea.containsMouse ? 1.1 : 1.0
 
@@ -128,14 +134,13 @@ Rectangle {
                 anchors.fill: parent
                 hoverEnabled: true
                 cursorShape: Qt.PointingHandCursor
-                propagateComposedEvents: true
-                onClicked: function(mouse) { mouse.accepted = false }
+                onClicked: homeHandler.goLeagues("nba")
             }
         }
 
         Image {
             id: footballCard
-            source: "../../../Resources/sprites/football-card/png/football-card-300px.png"
+            source: basePath + "Resources/sprites/football-card/png/football-card-300px.png"
             fillMode: Image.PreserveAspectFit
             scale: footballArea.containsMouse ? 1.1 : 1.0
 
@@ -148,8 +153,7 @@ Rectangle {
                 anchors.fill: parent
                 hoverEnabled: true
                 cursorShape: Qt.PointingHandCursor
-                propagateComposedEvents: true
-                onClicked: function(mouse) { mouse.accepted = false }
+                onClicked: homeHandler.goLeagues("nfl")
             }
         }
     }

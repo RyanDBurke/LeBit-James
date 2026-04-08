@@ -3,6 +3,7 @@
 
 # run script
 run.ps1
+debug.ps1
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
